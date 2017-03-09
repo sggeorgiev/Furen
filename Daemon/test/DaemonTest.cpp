@@ -15,7 +15,7 @@ public:
 
 int main(int argc, char **argv) {
 	ServerPtr server(new TestServer());
-	DaemonPtr daemon(new Daemon("/tmp/test-daemon.pid", server));
+	DaemonPtr daemon(new Daemon("daemon_test.xml", server));
 	daemon->main(argc, argv);
 	return 0;
 }
