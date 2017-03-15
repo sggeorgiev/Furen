@@ -47,7 +47,7 @@ std::string MessageProcessor::formatMessage(const std::string& format, const Mes
 	std::string text = message.getText();
 	textMessage.replace(textMessage.find("%Text%"), std::string("%Text%").length(), text);
 	
-	return textMessage;
+	return textMessage + "\n";
 }
 
 std::string MessageProcessor::convertSeverityToString(Severity severity) {

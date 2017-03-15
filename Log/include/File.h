@@ -18,16 +18,36 @@
 
 #pragma once
 #include <string>
+#include <stdio.h>
+#include <boost/shared_ptr.hpp>
 
 namespace Log {
 
 class File {
+private:
+	static const std::string FILE_EXTENSION;
 public:
-	File(const std::string& fileName);
+	File(const std::string& directoryPath, const std::string& fileName, unsigned long rotationSize);
 	virtual ~File();
 	
 public:
-	void write(const std::string data);
+	virtual void write(const std::string& data);
+	
+private:
+	typedef boost::shared_ptr<FILE> FilePtr;
+	const FilePtr& getFile();
+	static void closeFile(FILE *file);
+	unsigned long getLastFileIndex();
+	void rotate();
+	
+private:
+	std::string directoryPath_;
+	std::string fileName_;
+	unsigned long rotationSize_;
+	FilePtr currentFile_;
+	unsigned long currentFileIndex_;
 };
+
+typedef boost::shared_ptr<File> FilePtr;
 
 };

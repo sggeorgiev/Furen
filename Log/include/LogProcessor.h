@@ -21,6 +21,7 @@
 #include <Definitions.h>
 #include <MessageProcessor.h>
 #include <Pipe.h>
+#include <File.h>
 
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -57,15 +58,14 @@ private:
 	
 	MessageProcessor messageProcessor_;
 	Pipe pipe_;
+	FilePtr file_;
 	boost::thread thread_;
 	
+	std::string directoryName_;
 	std::string fileName_;
 	std::string level_;
 	std::string format_;
 	unsigned long rotationSize_;
-	unsigned char timeBasedRotationHour_;
-	unsigned char timeBasedRotationMinute_;
-	unsigned char timeBasedRotationSecond_;
 };
 
 #define LOG(severity) (Log::LogProcessor::instance()) += Log::Message(severity)
