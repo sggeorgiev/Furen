@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<main>
+		<name>deamon_test</name>
+		<pid_file_name>/tmp/daemon_test.pid</pid_file_name>
+	</main>
+	<log>
+		<file_name>/tmp/daemon_test</file_name>
+		<level>trace</level>
+		<format>%Time% %Severity% %ProcessId% %ThreadId% %Text%</format>
+		<rotation_size>104857600</rotation_size>
+		<time_based_rotation>
+			<hour>0</hour>
+			<minute>0</minute>
+			<second>0</second>
+		</time_based_rotation>
+	</log>
+</configuration>
