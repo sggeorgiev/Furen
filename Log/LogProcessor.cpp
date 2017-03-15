@@ -20,6 +20,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/xml_parser.hpp>
+#include <boost/algorithm/string.hpp>
 
 namespace Log {
 
@@ -48,15 +49,14 @@ void LogProcessor::init(const std::string& configFileName) {
 	boost::property_tree::read_xml(configFileName, configurationTree);
 	
 	//Log configuration
-	fileName_ = configurationTree.get<std::string>("configuration.log.file_name");
-	level_ = configurationTree.get<std::string>("configuration.log.level");
-	format_ = configurationTree.get<std::string>("configuration.log.format");
-	rotationSize_ = configurationTree.get<unsigned long>("configuration.log.rotation_size");
-	timeBasedRotationHour_ = configurationTree.get<unsigned char>("configuration.log.time_based_rotation.hour");
-	timeBasedRotationMinute_ = configurationTree.get<unsigned char>("configuration.log.time_based_rotation.minute");
-	timeBasedRotationSecond_ = configurationTree.get<unsigned char>("configuration.log.time_based_rotation.second");
+	directoryName_ = configurationTree.get<std::string>("configuration.log.directory_name", "/tmp");
+	fileName_ = configurationTree.get<std::string>("configuration.log.file_name", "log");
+	level_ = configurationTree.get<std::string>("configuration.log.level", "trace");
+	format_ = configurationTree.get<std::string>("configuration.log.format", "%Time% %Severity% %ProcessId% %ThreadId% %Text%");
+	rotationSize_ = configurationTree.get<unsigned long>("configuration.log.rotation_size", 104857600);
 	
 	thread_ = boost::thread(boost::bind(&LogProcessor::readFromPipe, shared_from_this()));
+	file_ = FilePtr(new Log::File(directoryName_, fileName_, rotationSize_));
 }
 
 LogProcessor& LogProcessor::operator+=(const Message& message) {
@@ -71,7 +71,8 @@ void LogProcessor::writeToPipe(const std::string& message) {
 }
 
 void LogProcessor::writeToFile(const std::string& message) {
-	std::cout << "M: " << message << std::endl;
+	if(file_)
+		file_->write(message);
 }
 
 void LogProcessor::readFromPipe() {
@@ -82,17 +83,17 @@ void LogProcessor::readFromPipe() {
 }
 
 Severity LogProcessor::getLogLevel(const std::string& level) {
-	if(level == "trace")
+	if(boost::iequals(level, "trace"))
 		return TRACE;
-	else if(level == "debug")
+	else if(boost::iequals(level, "debug"))
 		return DEBUG;
-	else if(level == "info")
+	else if(boost::iequals(level, "info"))
 		return INFO;
-	else if(level == "warning")
+	else if(boost::iequals(level, "warning"))
 		return WARNING;
-	else if(level == "error")
+	else if(boost::iequals(level, "error"))
 		return ERROR;
-	else if(level == "fatal")
+	else if(boost::iequals(level, "fatal"))
 		return FATAL;
 	
 	return TRACE;

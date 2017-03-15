@@ -22,6 +22,9 @@ namespace Log {
 namespace ErrorCode {
 enum {
 	CANNOT_READ_FROM_FILE,
+	CANNOT_WRITE_TO_FILE,
+	CANNOT_OPEN_FILE,
+	CANNOT_GET_FILE_POSITION,
 };
 };
 };
