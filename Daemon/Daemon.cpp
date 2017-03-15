@@ -10,20 +10,10 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/property_tree/xml_parser.hpp>
-#include <boost/log/core.hpp>
-#include <boost/log/trivial.hpp>
-#include <boost/log/expressions.hpp>
-#include <boost/log/sinks/text_file_backend.hpp>
-#include <boost/log/utility/setup/file.hpp>
-#include <boost/log/utility/setup/common_attributes.hpp>
-#include <boost/log/sources/severity_logger.hpp>
-#include <boost/log/sources/record_ostream.hpp>
-#include <boost/log/support/date_time.hpp>
 
 namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;
-namespace expr = boost::log::expressions;
 
 Daemon::Daemon(const std::string& configFileName, const ServerPtr& server): server_(server) {
 	pt::read_xml(configFileName, configurationTree_);
@@ -31,22 +21,13 @@ Daemon::Daemon(const std::string& configFileName, const ServerPtr& server): serv
 	//Main configuration
 	name_ = configurationTree_.get<std::string>("configuration.main.name");
 	pidFileName_ = configurationTree_.get<std::string>("configuration.main.pid_file_name");
-		
-	initLog();
-
-	BOOST_LOG_SEV(log_, boost::log::trivial::trace) << "A trace severity message";
-	BOOST_LOG_SEV(log_, boost::log::trivial::debug) << "A debug severity message";
-	BOOST_LOG_SEV(log_, boost::log::trivial::info) << "An informational severity message";
-	BOOST_LOG_SEV(log_, boost::log::trivial::warning) << "A warning severity message";
-	BOOST_LOG_SEV(log_, boost::log::trivial::error) << "An error severity message";
-	BOOST_LOG_SEV(log_, boost::log::trivial::fatal) << "A fatal severity message";
 }
 
 Daemon::~Daemon() {
 }
 
 void Daemon::start() {
-	BOOST_LOG_SEV(log_, boost::log::trivial::info) << "START";
+	//BOOST_LOG_SEV(log_, boost::log::trivial::info) << "START";
 	
 	//Check for a pidfile to see if the daemon already runs
 	pid_t pid = 0;
@@ -63,7 +44,7 @@ void Daemon::start() {
 }
 
 void Daemon::stop() {
-	BOOST_LOG_SEV(log_, boost::log::trivial::info) << "STOP";
+	//BOOST_LOG_SEV(log_, boost::log::trivial::info) << "STOP";
 	
 	// Get the pid from the pidfile
 	if(!fs::exists(pidFileName_)) {
@@ -89,15 +70,13 @@ void Daemon::stop() {
 }
 
 void Daemon::restart() {
-	BOOST_LOG_SEV(log_, boost::log::trivial::info) << "RESTART";
+	//BOOST_LOG_SEV(log_, boost::log::trivial::info) << "RESTART";
 	
 	stop();
 	start();
 }
 
 void Daemon::daemonize() {
-	boost::log::sources::severity_logger< boost::log::trivial::severity_level > lg;
-	
 	pid_t pid = 0;
 	if(pid = fork())
 	{
@@ -108,7 +87,7 @@ void Daemon::daemonize() {
 		}
 		else
 		{
-			BOOST_LOG_SEV(log_, boost::log::trivial::error) << "First fork failed!";			
+			//BOOST_LOG_SEV(log_, boost::log::trivial::error) << "First fork failed!";			
 			exit(1);
 		}
 	}
@@ -136,7 +115,7 @@ void Daemon::daemonize() {
 		}
 		else
 		{
-			BOOST_LOG_SEV(log_, boost::log::trivial::error) << "Second fork failed!";
+			//BOOST_LOG_SEV(log_, boost::log::trivial::error) << "Second fork failed!";
 			exit(1);
 		}
 	}
@@ -150,7 +129,7 @@ void Daemon::daemonize() {
 	// We don't want the daemon to have any standard input.
 	if(open("/dev/null", O_RDONLY) < 0)
 	{
-		BOOST_LOG_SEV(log_, boost::log::trivial::error) << "Unable to open /dev/null!";
+		//BOOST_LOG_SEV(log_, boost::log::trivial::error) << "Unable to open /dev/null!";
 		exit(1);
 	}	
 	
@@ -163,6 +142,9 @@ void Daemon::daemonize() {
 void Daemon::run() {
 	if(server_)
 		server_->run();
+	
+	if(fs::exists(pidFileName_))
+		fs::remove(pidFileName_);
 }
 
 void Daemon::main(int argc, char **argv) {
@@ -189,56 +171,4 @@ void Daemon::main(int argc, char **argv) {
 	else {
 		std::cout << description << std::endl;
 	}
-}
-
-void Daemon::initLog() {
-	//Log configuration
-	std::string fileName = configurationTree_.get<std::string>("configuration.log.file_name");
-	std::string level = configurationTree_.get<std::string>("configuration.log.level");
-	unsigned long rotationSize = configurationTree_.get<unsigned long>("configuration.log.rotation_size");
-	unsigned char timeBasedRotationHour = configurationTree_.get<unsigned char>("configuration.log.time_based_rotation.hour");
-	unsigned char timeBasedRotationMinute = configurationTree_.get<unsigned char>("configuration.log.time_based_rotation.minute");
-	unsigned char timeBasedRotationSecond = configurationTree_.get<unsigned char>("configuration.log.time_based_rotation.second");
-
-	boost::log::add_file_log
-	(
-		boost::log::keywords::open_mode = std::ios_base::app,
-		boost::log::keywords::file_name = fileName + "_%N.log",
-		boost::log::keywords::rotation_size = rotationSize,
-		boost::log::keywords::time_based_rotation = boost::log::sinks::file::rotation_at_time_point(timeBasedRotationHour, timeBasedRotationMinute, timeBasedRotationSecond),
-		boost::log::keywords::format =
-		(
-			expr::stream
-			<< std::setw(8) << std::setfill('0') 
-			<< expr::attr< unsigned int >("LineID")
-			<< " "
-			<< expr::format_date_time<boost::posix_time::ptime>("TimeStamp","%Y-%m-%d %H:%M:%S.%f")
-			<< " <" << boost::log::trivial::severity
-			<< "> \t" << expr::smessage
-		)
-	);
-
-	boost::log::core::get()->set_filter
-	(
-		boost::log::trivial::severity >= getLogLevel(level)
-	);
-	
-	boost::log::add_common_attributes();
-}
-
-boost::log::trivial::severity_level Daemon::getLogLevel(const std::string& level) {
-	if(level == "trace")
-		return boost::log::trivial::severity_level::trace;
-	else if(level == "debug")
-		return boost::log::trivial::severity_level::debug;
-	else if(level == "info")
-		return boost::log::trivial::severity_level::info;
-	else if(level == "warning")
-		return boost::log::trivial::severity_level::warning;
-	else if(level == "error")
-		return boost::log::trivial::severity_level::error;
-	else if(level == "fatal")
-		return boost::log::trivial::severity_level::fatal;
-	
-	return boost::log::trivial::severity_level::trace;
 }

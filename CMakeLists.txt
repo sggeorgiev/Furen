@@ -11,5 +11,6 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-3 -Wall -Werror=implicit -Werror=impli
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -fomit-frame-pointer -funroll-loops")
 set(CMAKE_CXX_FLAGS_FAST "-O2")
 
-include_directories("${PROJECT_SOURCE_DIR}/Daemon/include/")
+include_directories("${PROJECT_SOURCE_DIR}/Daemon/include/" "${PROJECT_SOURCE_DIR}/Log/include/" "${PROJECT_SOURCE_DIR}/Definitions/include/")
 add_subdirectory(Daemon) 
+add_subdirectory(Log)

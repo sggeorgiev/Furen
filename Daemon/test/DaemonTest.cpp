@@ -1,5 +1,7 @@
 #include "Daemon.h"
+#include <Log.h>
 #include <stdio.h>
+#include <boost/property_tree/xml_parser.hpp>
 
 class TestServer: public Server {
 public:
