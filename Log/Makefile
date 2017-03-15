@@ -139,29 +139,29 @@ Exception.cpp.s:
 	cd /home/sgeorgiev/sgeorgiev-pr/Furen && $(MAKE) -f Log/CMakeFiles/log.dir/build.make Log/CMakeFiles/log.dir/Exception.cpp.s
 .PHONY : Exception.cpp.s
 
-Log.o: Log.cpp.o
-.PHONY : Log.o
+LogProcessor.o: LogProcessor.cpp.o
+.PHONY : LogProcessor.o
 
 # target to build an object file
-Log.cpp.o:
-	cd /home/sgeorgiev/sgeorgiev-pr/Furen && $(MAKE) -f Log/CMakeFiles/log.dir/build.make Log/CMakeFiles/log.dir/Log.cpp.o
-.PHONY : Log.cpp.o
+LogProcessor.cpp.o:
+	cd /home/sgeorgiev/sgeorgiev-pr/Furen && $(MAKE) -f Log/CMakeFiles/log.dir/build.make Log/CMakeFiles/log.dir/LogProcessor.cpp.o
+.PHONY : LogProcessor.cpp.o
 
-Log.i: Log.cpp.i
-.PHONY : Log.i
+LogProcessor.i: LogProcessor.cpp.i
+.PHONY : LogProcessor.i
 
 # target to preprocess a source file
-Log.cpp.i:
-	cd /home/sgeorgiev/sgeorgiev-pr/Furen && $(MAKE) -f Log/CMakeFiles/log.dir/build.make Log/CMakeFiles/log.dir/Log.cpp.i
-.PHONY : Log.cpp.i
+LogProcessor.cpp.i:
+	cd /home/sgeorgiev/sgeorgiev-pr/Furen && $(MAKE) -f Log/CMakeFiles/log.dir/build.make Log/CMakeFiles/log.dir/LogProcessor.cpp.i
+.PHONY : LogProcessor.cpp.i
 
-Log.s: Log.cpp.s
-.PHONY : Log.s
+LogProcessor.s: LogProcessor.cpp.s
+.PHONY : LogProcessor.s
 
 # target to generate assembly for a file
-Log.cpp.s:
-	cd /home/sgeorgiev/sgeorgiev-pr/Furen && $(MAKE) -f Log/CMakeFiles/log.dir/build.make Log/CMakeFiles/log.dir/Log.cpp.s
-.PHONY : Log.cpp.s
+LogProcessor.cpp.s:
+	cd /home/sgeorgiev/sgeorgiev-pr/Furen && $(MAKE) -f Log/CMakeFiles/log.dir/build.make Log/CMakeFiles/log.dir/LogProcessor.cpp.s
+.PHONY : LogProcessor.cpp.s
 
 Message.o: Message.cpp.o
 .PHONY : Message.o
@@ -247,9 +247,9 @@ help:
 	@echo "... Exception.o"
 	@echo "... Exception.i"
 	@echo "... Exception.s"
-	@echo "... Log.o"
-	@echo "... Log.i"
-	@echo "... Log.s"
+	@echo "... LogProcessor.o"
+	@echo "... LogProcessor.i"
+	@echo "... LogProcessor.s"
 	@echo "... Message.o"
 	@echo "... Message.i"
 	@echo "... Message.s"
