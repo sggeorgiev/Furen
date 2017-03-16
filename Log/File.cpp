@@ -38,7 +38,7 @@ File::~File() {
 void File::write(const std::string& data) {
 	File::FilePtr file = getFile();
 	if(data.length() != fwrite(data.c_str(), sizeof(char), data.length(), file.get())) {
-		std::string message = "Cannot write file data!";
+		std::string message = "Cannot write data to file!";
 		throw Exception(ErrorCode::CANNOT_WRITE_TO_FILE, message);
 	}
 	

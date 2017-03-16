@@ -41,7 +41,7 @@ public:
 	static LogProcessor& instance();
 	
 public:
-	void init(const std::string& configFileName);
+	void init(const std::string& directoryName, const std::string& fileName, const std::string& level, const std::string& format, unsigned long rotationSize);
 	LogProcessor& operator+=(const Message& message);
 	
 private:

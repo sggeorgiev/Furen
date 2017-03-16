@@ -17,9 +17,6 @@
  */
 
 #include <LogProcessor.h>
-
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/xml_parser.hpp>
 #include <boost/algorithm/string.hpp>
 
 namespace Log {
@@ -44,16 +41,12 @@ LogProcessor& LogProcessor::instance() {
 	return *instance_;
 }
 
-void LogProcessor::init(const std::string& configFileName) {
-	boost::property_tree::ptree configurationTree;
-	boost::property_tree::read_xml(configFileName, configurationTree);
-	
-	//Log configuration
-	directoryName_ = configurationTree.get<std::string>("configuration.log.directory_name", "/tmp");
-	fileName_ = configurationTree.get<std::string>("configuration.log.file_name", "log");
-	level_ = configurationTree.get<std::string>("configuration.log.level", "trace");
-	format_ = configurationTree.get<std::string>("configuration.log.format", "%Time% %Severity% %ProcessId% %ThreadId% %Text%");
-	rotationSize_ = configurationTree.get<unsigned long>("configuration.log.rotation_size", 104857600);
+void LogProcessor::init(const std::string& directoryName, const std::string& fileName, const std::string& level, const std::string& format, unsigned long rotationSize) {
+	directoryName_ = directoryName;
+	fileName_ = fileName;
+	level_ = level;
+	format_ = format;
+	rotationSize_ = rotationSize;
 	
 	thread_ = boost::thread(boost::bind(&LogProcessor::readFromPipe, shared_from_this()));
 	file_ = FilePtr(new Log::File(directoryName_, fileName_, rotationSize_));

@@ -28,17 +28,22 @@ class Daemon {
 private:
 	std::string name_;
 	std::string pidFileName_;
-	boost::property_tree::ptree configurationTree_;
+	std::string directoryName_;
+	std::string fileName_;
+	std::string level_;
+	std::string format_;
+	unsigned long rotationSize_;
 	
 	ServerPtr server_;
 public:
-	Daemon(const std::string& configFileName, const ServerPtr& server);
+	Daemon(const ServerPtr& server);
 	~Daemon();
 	
 public:
 	void start();
 	void stop();
 	void restart();
+	bool loadAndVlidateConfigFile(const std::string& configFile);
 	void main(int argc, char **argv);
 private:
 	void daemonize();
