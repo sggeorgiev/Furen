@@ -28,6 +28,9 @@ public:
 		for(int i=0; i<1000; i++) {
 			fprintf(fp, "%d\n", i);
 			fflush(fp);
+			
+			LOG(Log::TRACE) << i;
+			
 			sleep(3);
 		}
 	}
@@ -35,7 +38,7 @@ public:
 
 int main(int argc, char **argv) {
 	ServerPtr server(new TestServer());
-	DaemonPtr daemon(new Daemon("daemon_test.xml", server));
+	DaemonPtr daemon(new Daemon(server));
 	daemon->main(argc, argv);
 	return 0;
 }

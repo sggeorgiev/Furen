@@ -1,0 +1,24 @@
+*.a
+*.o
+*.so
+*.so.*
+*.la
+*.lo
+*.md5
+*~
+\#*
+.gitk-tmp.*
+*.pyc
+*.swo
+*.swp
+*.project
+.ptp-sync-folder
+.ptp-sync
+
+# The cmake files for in source builds
+*.cmake
+*Config.cmake.in
+Makefile
+CMakeFiles/
+Testing/
+CMakeCache.txt

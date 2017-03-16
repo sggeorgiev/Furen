@@ -16,7 +16,8 @@
  * 
  */
 
-#include "include/Daemon.h"
+#include "Daemon.h"
+#include "Log.h"
 #include <iostream>
 #include <syslog.h>
 #include <unistd.h>
@@ -24,6 +25,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -33,24 +35,21 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;
 
-Daemon::Daemon(const std::string& configFileName, const ServerPtr& server): server_(server) {
-	pt::read_xml(configFileName, configurationTree_);
-	
-	//Main configuration
-	name_ = configurationTree_.get<std::string>("configuration.main.name");
-	pidFileName_ = configurationTree_.get<std::string>("configuration.main.pid_file_name");
+Daemon::Daemon(const ServerPtr& server): server_(server) {
 }
 
 Daemon::~Daemon() {
 }
 
 void Daemon::start() {
-	//BOOST_LOG_SEV(log_, boost::log::trivial::info) << "START";
-	
 	//Check for a pidfile to see if the daemon already runs
 	pid_t pid = 0;
 	if(fs::exists(pidFileName_)) {
 		FILE* fp = fopen(pidFileName_.c_str(), "r");
+		if(fp == NULL) {
+			std::cerr << "Cannot open file: " << pidFileName_ << " Error: " << strerror(errno);
+			return;
+		}
 		fscanf(fp, "%d", &pid);
 		fclose(fp);
 		std::cout << name_ << " is already running. pid: " << pid << std::endl;
@@ -62,8 +61,6 @@ void Daemon::start() {
 }
 
 void Daemon::stop() {
-	//BOOST_LOG_SEV(log_, boost::log::trivial::info) << "STOP";
-	
 	// Get the pid from the pidfile
 	if(!fs::exists(pidFileName_)) {
 		std::cout << name_ << " is not running." << std::endl;
@@ -72,6 +69,10 @@ void Daemon::stop() {
 	
 	pid_t pid  = 0;
 	FILE* fp = fopen(pidFileName_.c_str(), "r");
+	if(fp == NULL) {
+		std::cerr << "Cannot open file: " << pidFileName_ << " Error: " << strerror(errno);
+		return;
+	}
 	fscanf(fp, "%d", &pid);
 	fclose(fp);
 	
@@ -88,24 +89,21 @@ void Daemon::stop() {
 }
 
 void Daemon::restart() {
-	//BOOST_LOG_SEV(log_, boost::log::trivial::info) << "RESTART";
-	
 	stop();
 	start();
 }
 
 void Daemon::daemonize() {
-	pid_t pid = 0;
-	if(pid = fork())
+	pid_t pid = fork();
+	if(pid != 0)
 	{
 		if(pid > 0)
 		{
-		// We're in the parent process and need to exit.
+			// We're in the parent process and need to exit.
 			exit(0);
 		}
 		else
 		{
-			//BOOST_LOG_SEV(log_, boost::log::trivial::error) << "First fork failed!";			
 			exit(1);
 		}
 	}
@@ -125,15 +123,16 @@ void Daemon::daemonize() {
 	umask(0);
 
 	// A second fork ensures the process cannot acquire a controlling terminal.
-	if(pid = fork())
+	pid = fork();
+	if(pid != 0)
 	{
 		if(pid > 0)
 		{
+			// We're in the parent process and need to exit.
 			exit(0);
 		}
 		else
 		{
-			//BOOST_LOG_SEV(log_, boost::log::trivial::error) << "Second fork failed!";
 			exit(1);
 		}
 	}
@@ -147,28 +146,109 @@ void Daemon::daemonize() {
 	// We don't want the daemon to have any standard input.
 	if(open("/dev/null", O_RDONLY) < 0)
 	{
-		//BOOST_LOG_SEV(log_, boost::log::trivial::error) << "Unable to open /dev/null!";
+		LOG(Log::ERROR) << "Unable to open /dev/null!";
 		exit(1);
 	}	
 	
+	//open log
+	Log::init(directoryName_, fileName_, level_, format_, rotationSize_);
+	
 	pid = getpid();
 	FILE* fp = fopen(pidFileName_.c_str(), "w");
+	if(fp == NULL) {
+		LOG(Log::ERROR) << "Cannot open file: " << pidFileName_ << " Error: " << strerror(errno);
+		return;
+	}
 	fprintf(fp, "%d", pid);
 	fclose(fp);
 }
 
 void Daemon::run() {
-	if(server_)
+	LOG(Log::INFO) << "START";
+	if(server_) {
+		LOG(Log::INFO) << "RUN";
 		server_->run();
+	}
 	
+	LOG(Log::INFO) << "STOP";
 	if(fs::exists(pidFileName_))
 		fs::remove(pidFileName_);
 }
 
+bool Daemon::loadAndVlidateConfigFile(const std::string& configFile) {
+	if(!fs::exists(configFile)) {
+		std::cerr << "Config file: \"" << configFile << "\" doesn't exists!" << std::endl;
+		return false;
+	}
+	
+	if(configFile.at(0) != '/') {
+		std::cerr << "Please specify absolute path to config file!" << std::endl;
+		return false;
+	}
+	
+	boost::property_tree::ptree configurationTree;
+	pt::read_xml(configFile, configurationTree);
+	name_ = configurationTree.get<std::string>("configuration.main.name", "");
+	if(name_.empty()) {
+		std::cerr << "Please specify main.name in configuration file!" << std::endl;
+		return false;
+	}
+	
+	pidFileName_ = configurationTree.get<std::string>("configuration.main.pid_file_name", "");
+	if(pidFileName_.empty()) {
+		std::cerr << "Please specify main.pid_file_name in configuration file!" << std::endl;
+		return false;
+	}
+	
+	if(pidFileName_.at(0) != '/') {
+		std::cerr << "Please specify absolute path in main.pid_file_name in configuration file!" << std::endl;
+		return false;
+	}
+	
+	directoryName_ = configurationTree.get<std::string>("configuration.log.directory_name", "");
+	if(directoryName_.empty()) {
+		std::cerr << "Please specify log.directory_name in configuration file!" << std::endl;
+		return false;
+	}
+	
+	if(directoryName_.at(0) != '/') {
+		std::cerr << "Please specify absolute path in log.directory_name in configuration file!" << std::endl;
+		return false;
+	}
+	
+	fileName_ = configurationTree.get<std::string>("configuration.log.file_name", "");
+	if(fileName_.empty()) {
+		std::cerr << "Please specify log.file_name in configuration file!" << std::endl;
+		return false;
+	}
+	
+	level_ = configurationTree.get<std::string>("configuration.log.level", "");
+	if(level_.empty()) {
+		std::cerr << "Please specify log.level in configuration file!" << std::endl;
+		return false;
+	}
+	
+	format_ = configurationTree.get<std::string>("configuration.log.format", "");
+	if(level_.empty()) {
+		std::cerr << "Please specify log.format in configuration file!" << std::endl;
+		return false;
+	}
+	
+	rotationSize_ = configurationTree.get<unsigned long>("configuration.log.rotation_size", 0);
+	if(rotationSize_ == 0) {
+		std::cerr << "Please specify log.rotation_size in configuration file!" << std::endl;
+		return false;
+	}
+	
+	return true;
+}
+
 void Daemon::main(int argc, char **argv) {
+	std::string configFile;
 	po::options_description description("Options");
 	description.add_options()
 		("help", "Show help message.")
+		("config-file", po::value<std::string>(&configFile), "Config file.")
 		("start", "Start daemon.")
 		("stop", "Stop daemon.")
 		("restart", "Restart daemon.");
@@ -176,6 +256,14 @@ void Daemon::main(int argc, char **argv) {
 	po::variables_map variablesMap;
 	po::store(po::parse_command_line(argc, argv, description), variablesMap);
 	po::notify(variablesMap);
+	
+	if(variablesMap.count("config-file") == 0) {
+		std::cerr << "Please specify config-file!" << std::endl;
+	}
+	
+	if(!loadAndVlidateConfigFile(configFile)) {
+		return;
+	}
 	
 	if(variablesMap.count("start")) {
 		start();

@@ -22,8 +22,8 @@
 
 namespace Log {
 
-static inline void init(const std::string& configFileName) {
-	LogProcessor::instance().init(configFileName);
+static inline void init(const std::string& directoryName, const std::string& fileName, const std::string& level, const std::string& format, unsigned long rotationSize) {
+	LogProcessor::instance().init(directoryName, fileName, level, format, rotationSize);
 }
 
 };

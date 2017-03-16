@@ -19,8 +19,8 @@
 #include <iostream>
 #include <Log.h>
 
-int main() {
-	Log::init("log_test.xml");
+int main() {	
+	Log::init("/tmp/test_log/", "log_test", "trace", "%Time% %Severity% %ProcessId% %ThreadId% %Text%", 104857600);
 	
 	for(int i=0; i <20; i++) {
 		LOG(Log::TRACE) << "test test test" << " tttt " << i;
