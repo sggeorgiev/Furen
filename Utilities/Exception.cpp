@@ -16,9 +16,9 @@
  * 
  */
 
-#include "Exception.h"
+#include "include/Exception.h"
 
-namespace Log {
+namespace Utilities {
 
 Exception::Exception(unsigned int errorCode, const std::string& errorMessage): std::logic_error(errorMessage) {
 	errorCode_ = errorCode;

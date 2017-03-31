@@ -18,12 +18,21 @@
 
 #pragma once
 
-#include <boost/shared_ptr.hpp>
+#include <string>
+#include <stdexcept>
 
-class Server {
+#include "ErrorCode.h"
+
+namespace Utilities {
+
+class Exception: public std::logic_error {
 public:
-	virtual ~Server() {};
-	virtual void run() {};
+	Exception(unsigned int errorCode, const std::string& errorMessage);
+	
+	unsigned int getErrorCode() const;
+
+private:
+	unsigned int errorCode_;
 };
 
-typedef boost::shared_ptr<Server> ServerPtr;
+};

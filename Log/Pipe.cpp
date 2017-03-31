@@ -44,7 +44,7 @@ std::string Pipe::read() {
 	while(bytesLeft > 0) {
 		int numberOfBytes = ::read(fd_[0], buffer, bytesLeft);
 		if(numberOfBytes == -1)
-			throw Exception(ErrorCode::CANNOT_READ_FROM_FILE, "Cannot read from pipe.");
+			throw Utilities::Exception(Utilities::ErrorCode::CANNOT_READ_FROM_FILE, "Cannot read from pipe.");
 		
 		if(numberOfBytes > 0)
 			bytesLeft -= numberOfBytes;

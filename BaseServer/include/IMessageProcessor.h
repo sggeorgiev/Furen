@@ -16,29 +16,9 @@
  * 
  */
 
-#include "Daemon.h"
-#include <Log.h>
-#include <stdio.h>
-#include <boost/property_tree/xml_parser.hpp>
+#pragma once
 
-class TestService: public Service {
+class IMessageProcessor {
 public:
-        virtual void run() {
-		FILE* fp = fopen("/tmp/test-daemon.output", "w");
-		for(int i=0; i<1000; i++) {
-			fprintf(fp, "%d\n", i);
-			fflush(fp);
-			
-			LOG(Log::TRACE) << i;
-			
-			sleep(3);
-		}
-	}
+	
 };
-
-int main(int argc, char **argv) {
-	ServicePtr service(new TestService());
-	DaemonPtr daemon(new Daemon(service));
-	daemon->main(argc, argv);
-	return 0;
-}
