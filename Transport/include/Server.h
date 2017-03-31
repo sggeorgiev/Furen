@@ -18,36 +18,41 @@
 
 #pragma once
 
+#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/asio.hpp>
 
-namespace BaseServer {
-	
-class Message {
+#include "Definitions.h"
+#include "Message.h"
+#include "Session.h"
+#include "SessionManager.h"
+
+namespace Transport {
+
+class Server: public boost::enable_shared_from_this<Server> {
 public:
-	const static unsigned int HEADER_SIZE = 5;
-	const static unsigned int MAX_BODY_SIZE = 99999;
+	Server(IOServeice& ioServeice, const Endpoint& endpoint);
+	virtual ~Server();
 	
 public:
-	Message();
-	~Message();
+	void start();
 	
-	void setData(const std::string& data);
-	
-	char* getData();
-	char* getBody();
-	unsigned int getLength() const;
-	unsigned int getBodyLength() const ;
-	
-	bool decodeHeader();
+protected:
+	virtual void handleReceiveMessage(const SessionPtr session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error);
 	
 private:
-	void encodeHeader();
+	void accept();
+	void handleAccept(const SessionPtr& session, const boost::system::error_code& error);
 	
 private:
-	char data_[HEADER_SIZE + MAX_BODY_SIZE];
-	unsigned int bodyLength_;
+	IOServeice& ioServeice_;
+	Endpoint endpoint_;
+	Acceptor acceptor_;
+	SessionManagerPtr sessionManager_;
+	SessionId currentSessionId_;
 };
 
-typedef boost::shared_ptr<Message> MessagePtr;
+typedef boost::shared_ptr<Server> ServerPtr;
 
-};
+}

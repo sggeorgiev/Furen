@@ -17,11 +17,9 @@
  */
 
 #include "include/Session.h"
-#include "include/ReceiveMessageEvent.h"
 #include "Log.h"
-#include "EventBus.h"
 
-namespace BaseServer {
+namespace Transport {
 
 Session::Session(IOServeice& ioServeice): socket_(ioServeice) {
 }
@@ -29,50 +27,41 @@ Session::Session(IOServeice& ioServeice): socket_(ioServeice) {
 Session::~Session() {
 }
 
-void Session::start() {
-	read(boost::bind(&Session::handleRead, shared_from_this(), _1, _2));
+void Session::start(const ReadCallback& readCallback) {
+	readCallback_ = readCallback;
+	message_.reset(new Message);
+	boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Session::handleReadMessageHeader, shared_from_this(), boost::asio::placeholders::error));
 }
 
 Socket& Session::getSocket() {
 	return socket_;
 }
 
-void Session::read(const ReadCallback& callback) {
-	message_.reset(new Message);
-	boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Session::handleReadMessageHeader, shared_from_this(), callback, boost::asio::placeholders::error));
-}
-
-void Session::handleRead(const MessagePtr& message, const Utilities::ErrorPtr& error) {
-	if(!error) {
-		ReceiveMessageEvent event(message);
-		Processing::EventBus::instance().dispatchEvent(event);
-	}
-	
-	read(boost::bind(&Session::handleRead, shared_from_this(), _1, _2));
-}
-
-void Session::handleReadMessageHeader(const ReadCallback& callback, const boost::system::error_code& errorCode) {
+void Session::handleReadMessageHeader(const boost::system::error_code& errorCode) {
 	if (!errorCode && message_->decodeHeader()) {
 		LOG(Log::DEBUG) << "readMessageHeader complete successful, body size: " << message_->getBodyLength();
-		boost::asio::async_read(socket_, boost::asio::buffer(message_->getBody(), message_->getBodyLength()), boost::bind(&Session::handleReadMessageBody, shared_from_this(), callback, boost::asio::placeholders::error));
+		boost::asio::async_read(socket_, boost::asio::buffer(message_->getBody(), message_->getBodyLength()), boost::bind(&Session::handleReadMessageBody, shared_from_this(), boost::asio::placeholders::error));
 	}
 	else {
 		LOG(Log::ERROR) << "readMessageHeader fail: " << errorCode;
 		Utilities::ErrorPtr error(new Utilities::Error(Utilities::ErrorCode::CANNOT_READ_FROM_SOCKET, errorCode.message()));
-		callback(message_, error);
+		readCallback_(message_, error);
 	}
 }
 
-void Session::handleReadMessageBody(const ReadCallback& callback, const boost::system::error_code& errorCode) {
+void Session::handleReadMessageBody(const boost::system::error_code& errorCode) {
 	if (!errorCode) {
 		LOG(Log::DEBUG) << "readMessageBody complete successful";
 		Utilities::ErrorPtr error;
-		callback(message_, error);
+		readCallback_(message_, error);
+		
+		message_.reset(new Message);
+		boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Session::handleReadMessageHeader, shared_from_this(), boost::asio::placeholders::error));
 	}
 	else {
 		LOG(Log::ERROR) << "readMessageBody fail: " << errorCode;
 		Utilities::ErrorPtr error(new Utilities::Error(Utilities::ErrorCode::CANNOT_READ_FROM_SOCKET, errorCode.message()));
-		callback(message_, error);
+		readCallback_(message_, error);
 	}
 }
 

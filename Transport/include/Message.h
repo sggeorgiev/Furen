@@ -17,18 +17,37 @@
  */
 
 #pragma once
-#include <boost/bind.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/asio.hpp>
-#include <boost/function.hpp>
-#include "Error.h"
 
-namespace BaseServer {
-	typedef boost::asio::io_service IOServeice;
-	typedef boost::asio::ip::tcp::endpoint Endpoint;
-	typedef boost::asio::ip::tcp::acceptor Acceptor;
+#include <boost/shared_ptr.hpp>
+
+namespace Transport {
 	
-	typedef boost::asio::ip::tcp::socket Socket;
-	typedef unsigned long SessionId;
+class Message {
+public:
+	const static unsigned int HEADER_SIZE = 5;
+	const static unsigned int MAX_BODY_SIZE = 99999;
+	
+public:
+	Message();
+	~Message();
+	
+	void setData(const std::string& data);
+	
+	char* getData();
+	char* getBody();
+	unsigned int getLength() const;
+	unsigned int getBodyLength() const ;
+	
+	bool decodeHeader();
+	
+private:
+	void encodeHeader();
+	
+private:
+	char data_[HEADER_SIZE + MAX_BODY_SIZE];
+	unsigned int bodyLength_;
+};
+
+typedef boost::shared_ptr<Message> MessagePtr;
+
 };
