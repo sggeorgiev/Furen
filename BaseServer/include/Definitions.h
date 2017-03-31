@@ -17,14 +17,18 @@
  */
 
 #pragma once
+#include <boost/bind.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/asio.hpp>
+#include <boost/function.hpp>
+#include "Error.h"
 
-namespace Log {
-namespace ErrorCode {
-enum {
-	CANNOT_READ_FROM_FILE,
-	CANNOT_WRITE_TO_FILE,
-	CANNOT_OPEN_FILE,
-	CANNOT_GET_FILE_POSITION,
-};
-};
+namespace BaseServer {
+	typedef boost::asio::io_service IOServeice;
+	typedef boost::asio::ip::tcp::endpoint Endpoint;
+	typedef boost::asio::ip::tcp::acceptor Acceptor;
+	
+	typedef boost::asio::ip::tcp::socket Socket;
+	typedef std::string SessionId;
 };

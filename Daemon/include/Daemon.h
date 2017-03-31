@@ -22,21 +22,11 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/property_tree/ptree.hpp>
 
-#include "Server.h"
+#include "Service.h"
 
 class Daemon {
-private:
-	std::string name_;
-	std::string pidFileName_;
-	std::string directoryName_;
-	std::string fileName_;
-	std::string level_;
-	std::string format_;
-	unsigned long rotationSize_;
-	
-	ServerPtr server_;
 public:
-	Daemon(const ServerPtr& server);
+	Daemon(const ServicePtr& server);
 	~Daemon();
 	
 public:
@@ -48,6 +38,17 @@ public:
 private:
 	void daemonize();
 	void run();
+	
+private:
+	std::string name_;
+	std::string pidFileName_;
+	std::string directoryName_;
+	std::string fileName_;
+	std::string level_;
+	std::string format_;
+	unsigned long rotationSize_;
+	
+	ServicePtr service_;
 };
 
 typedef boost::shared_ptr<Daemon> DaemonPtr;

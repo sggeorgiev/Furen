@@ -35,7 +35,7 @@ namespace fs = boost::filesystem;
 namespace po = boost::program_options;
 namespace pt = boost::property_tree;
 
-Daemon::Daemon(const ServerPtr& server): server_(server) {
+Daemon::Daemon(const ServicePtr& service): service_(service) {
 }
 
 Daemon::~Daemon() {
@@ -165,9 +165,9 @@ void Daemon::daemonize() {
 
 void Daemon::run() {
 	LOG(Log::INFO) << "START";
-	if(server_) {
+	if(service_) {
 		LOG(Log::INFO) << "RUN";
-		server_->run();
+		service_->run();
 	}
 	
 	LOG(Log::INFO) << "STOP";

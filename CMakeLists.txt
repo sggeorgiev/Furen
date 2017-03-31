@@ -11,6 +11,10 @@ set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -gdwarf-3 -Wall -Werror=implicit -Werror=impli
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -pipe -fomit-frame-pointer -funroll-loops")
 set(CMAKE_CXX_FLAGS_FAST "-O2")
 
-include_directories("${PROJECT_SOURCE_DIR}/Daemon/include/" "${PROJECT_SOURCE_DIR}/Log/include/" "${PROJECT_SOURCE_DIR}/Definitions/include/")
+find_package(Boost 1.54 COMPONENTS thread filesystem regex system date_time program_options log log_setup REQUIRED)
+
+include_directories("${PROJECT_SOURCE_DIR}/Daemon/include/" "${PROJECT_SOURCE_DIR}/Log/include/" "${PROJECT_SOURCE_DIR}/Definitions/include/" "${PROJECT_SOURCE_DIR}/BaseServer/include/" "${PROJECT_SOURCE_DIR}/Utilities/include/")
 add_subdirectory(Daemon) 
 add_subdirectory(Log)
+add_subdirectory(BaseServer)
+add_subdirectory(Utilities)

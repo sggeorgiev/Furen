@@ -39,7 +39,7 @@ void File::write(const std::string& data) {
 	File::FilePtr file = getFile();
 	if(data.length() != fwrite(data.c_str(), sizeof(char), data.length(), file.get())) {
 		std::string message = "Cannot write data to file!";
-		throw Exception(ErrorCode::CANNOT_WRITE_TO_FILE, message);
+		throw Utilities::Exception(Utilities::ErrorCode::CANNOT_WRITE_TO_FILE, message);
 	}
 	
 	fflush(file.get());
@@ -54,7 +54,7 @@ void File::rotate() {
 	long size = ftell(currentFile_.get());
 	if(size == -1) {
 		std::string message = "Cannot get file position!";
-		throw Exception(ErrorCode::CANNOT_GET_FILE_POSITION, message);
+		throw Utilities::Exception(Utilities::ErrorCode::CANNOT_GET_FILE_POSITION, message);
 	}
 	
 	if((unsigned long)size > rotationSize_) {
@@ -80,7 +80,7 @@ const File::FilePtr& File::getFile() {
 	
 	if(fp == NULL) {
 		std::string message = "Cannot open file: " + realFileName;
-		throw Exception(ErrorCode::CANNOT_OPEN_FILE, message);
+		throw Utilities::Exception(Utilities::ErrorCode::CANNOT_OPEN_FILE, message);
 	}
 	currentFile_ = FilePtr(fp, closeFile);
 	return currentFile_;
