@@ -30,7 +30,7 @@ public:
 	
 public:
 	void addSession(const SessionId& sessionId, const SessionPtr& session);
-	const SessionPtr& getSession(const SessionId& sessionId) const;
+	SessionPtr getSession(const SessionId& sessionId) const;
 	
 private:
 	typedef std::map<SessionId, SessionPtr> SessionMap;

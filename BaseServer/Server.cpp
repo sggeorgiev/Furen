@@ -21,7 +21,12 @@
 
 namespace BaseServer {
 	
-Server::Server(IOServeice& ioServeice, const Endpoint& endpoint, const SessionManagerPtr& sessionManager): ioServeice_(ioServeice), endpoint_(endpoint), acceptor_(ioServeice, endpoint), sessionManager_(new SessionManager) {
+Server::Server(IOServeice& ioServeice, const Endpoint& endpoint): 
+	ioServeice_(ioServeice),
+	endpoint_(endpoint),
+	acceptor_(ioServeice, endpoint),
+	sessionManager_(new SessionManager),
+	currentSessionId_(0) {
 }
 
 Server::~Server(){
@@ -38,7 +43,7 @@ void Server::accept() {
 
 void Server::handleAccept(const SessionPtr& session, const boost::system::error_code& errorCode) {
 	if (!errorCode) {
-		sessionManager_->addSession(session);
+		sessionManager_->addSession(currentSessionId_++, session);
 		session->start();
 	}
 	else {

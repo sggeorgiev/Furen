@@ -16,24 +16,21 @@
  * 
  */
 
-#include "include/SessionManager.h"
+#pragma once
+#include <boost/shared_ptr.hpp>
 
-namespace BaseServer {
-SessionManager::SessionManager() {
-}
+namespace Utilities {
+	
+class Error {
+public:
+	Error(unsigned int errorCode, const std::string& errorMessage);
+	virtual ~Error();
+	
+private:
+	unsigned int errorCode_;
+	const std::string& errorMessage_;
+};
 
-SessionManager::~SessionManager() {
-}
-
-void SessionManager::addSession(const SessionId& sessionId, const SessionPtr& session) {
-	sessionMap_.insert(std::make_pair(sessionId, session));
-}
-
-SessionPtr SessionManager::getSession(const SessionId& sessionId) const {
-	SessionMap::const_iterator it = sessionMap_.find(sessionId);
-	if(it != sessionMap_.end())
-		return it->second;
-	return SessionPtr();
-}
+typedef boost::shared_ptr<Error> ErrorPtr;
 
 };

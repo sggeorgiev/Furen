@@ -16,24 +16,17 @@
  * 
  */
 
-#include "include/SessionManager.h"
+#pragma once
+#include <string>
 
-namespace BaseServer {
-SessionManager::SessionManager() {
-}
+namespace Processing {
 
-SessionManager::~SessionManager() {
-}
+typedef std::string EventId;
 
-void SessionManager::addSession(const SessionId& sessionId, const SessionPtr& session) {
-	sessionMap_.insert(std::make_pair(sessionId, session));
-}
-
-SessionPtr SessionManager::getSession(const SessionId& sessionId) const {
-	SessionMap::const_iterator it = sessionMap_.find(sessionId);
-	if(it != sessionMap_.end())
-		return it->second;
-	return SessionPtr();
-}
-
+class Event {
+public:
+	virtual ~Event() {};
+	virtual const EventId& getId() const = 0;
 };
+
+}
