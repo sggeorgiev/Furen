@@ -16,24 +16,34 @@
  * 
  */
 
-#include "include/SessionManager.h"
+#pragma once
+#include "Event.h"
+#include "Listener.h"
+#include <boost/noncopyable.hpp>
+#include <boost/thread/thread.hpp>
+#include <boost/thread/mutex.hpp>
+#include <vector>
+#include <map>
 
-namespace BaseServer {
-SessionManager::SessionManager() {
-}
+namespace Processing {
 
-SessionManager::~SessionManager() {
-}
-
-void SessionManager::addSession(const SessionId& sessionId, const SessionPtr& session) {
-	sessionMap_.insert(std::make_pair(sessionId, session));
-}
-
-SessionPtr SessionManager::getSession(const SessionId& sessionId) const {
-	SessionMap::const_iterator it = sessionMap_.find(sessionId);
-	if(it != sessionMap_.end())
-		return it->second;
-	return SessionPtr();
-}
-
+class EventBus: public boost::noncopyable {
+public:
+	~EventBus();
+	static EventBus& instance();
+	
+	virtual void registerListener(const EventId& eventId, const ListenerPtr& listener);
+	virtual void dispatchEvent(const Event& event);
+	
+protected:
+	typedef std::vector<ListenerPtr> ListenerList;
+	typedef std::map<EventId, ListenerList> ListenerMap;
+	
+	ListenerMap listeners_;
+	boost::mutex mutex_;
+	
+	typedef boost::shared_ptr<EventBus> EventBusPtr;
+	static EventBusPtr instance_;
+	static boost::mutex instanceMutex_;
+};
 };

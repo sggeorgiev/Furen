@@ -17,18 +17,20 @@
  */
 
 #include "include/Session.h"
+#include "include/ReceiveMessageEvent.h"
 #include "Log.h"
+#include "EventBus.h"
 
 namespace BaseServer {
 
-Session::Session(IOServeice& ioServeice): socket_(ioServeice), message_(new Message) {
+Session::Session(IOServeice& ioServeice): socket_(ioServeice) {
 }
 
 Session::~Session() {
 }
 
 void Session::start() {
-	
+	read(boost::bind(&Session::handleRead, shared_from_this(), _1, _2));
 }
 
 Socket& Session::getSocket() {
@@ -36,7 +38,17 @@ Socket& Session::getSocket() {
 }
 
 void Session::read(const ReadCallback& callback) {
+	message_.reset(new Message);
 	boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Session::handleReadMessageHeader, shared_from_this(), callback, boost::asio::placeholders::error));
+}
+
+void Session::handleRead(const MessagePtr& message, const Utilities::ErrorPtr& error) {
+	if(!error) {
+		ReceiveMessageEvent event(message);
+		Processing::EventBus::instance().dispatchEvent(event);
+	}
+	
+	read(boost::bind(&Session::handleRead, shared_from_this(), _1, _2));
 }
 
 void Session::handleReadMessageHeader(const ReadCallback& callback, const boost::system::error_code& errorCode) {
@@ -56,7 +68,6 @@ void Session::handleReadMessageBody(const ReadCallback& callback, const boost::s
 		LOG(Log::DEBUG) << "readMessageBody complete successful";
 		Utilities::ErrorPtr error;
 		callback(message_, error);
-		boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Session::handleReadMessageHeader, shared_from_this(), callback, boost::asio::placeholders::error));
 	}
 	else {
 		LOG(Log::ERROR) << "readMessageBody fail: " << errorCode;

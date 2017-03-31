@@ -30,5 +30,5 @@ namespace BaseServer {
 	typedef boost::asio::ip::tcp::acceptor Acceptor;
 	
 	typedef boost::asio::ip::tcp::socket Socket;
-	typedef std::string SessionId;
+	typedef unsigned long SessionId;
 };

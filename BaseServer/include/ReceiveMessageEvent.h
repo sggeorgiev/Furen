@@ -16,24 +16,24 @@
  * 
  */
 
-#include "include/SessionManager.h"
+#pragma once
+#include "Event.h"
+#include "Message.h"
 
 namespace BaseServer {
-SessionManager::SessionManager() {
-}
-
-SessionManager::~SessionManager() {
-}
-
-void SessionManager::addSession(const SessionId& sessionId, const SessionPtr& session) {
-	sessionMap_.insert(std::make_pair(sessionId, session));
-}
-
-SessionPtr SessionManager::getSession(const SessionId& sessionId) const {
-	SessionMap::const_iterator it = sessionMap_.find(sessionId);
-	if(it != sessionMap_.end())
-		return it->second;
-	return SessionPtr();
-}
+	
+class ReceiveMessageEvent: public Processing::Event {
+public:
+	static const Processing::EventId id;
+public:
+	ReceiveMessageEvent(const MessagePtr& message);
+	
+public:
+	virtual const Processing::EventId& getId() const;
+	const MessagePtr& getMessage() const;
+	
+private:
+	MessagePtr message_;
+};
 
 };

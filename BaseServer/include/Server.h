@@ -47,6 +47,7 @@ private:
 	Endpoint endpoint_;
 	Acceptor acceptor_;
 	SessionManagerPtr sessionManager_;
+	SessionId currentSessionId_;
 };
 
 typedef boost::shared_ptr<Server> ServerPtr;

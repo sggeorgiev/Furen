@@ -54,6 +54,7 @@ public:
 	void write(const WriteCallback& callback, const MessagePtr& message);
 	
 private:
+	void handleRead(const MessagePtr& message, const Utilities::ErrorPtr& error);
 	void handleReadMessageHeader(const ReadCallback& callback, const boost::system::error_code& error);
 	void handleReadMessageBody(const ReadCallback& callback, const boost::system::error_code& error);
 	void handleWrite(const WriteCallback& callback, const boost::system::error_code& error);

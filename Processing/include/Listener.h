@@ -16,24 +16,18 @@
  * 
  */
 
-#include "include/SessionManager.h"
+#pragma once
 
-namespace BaseServer {
-SessionManager::SessionManager() {
-}
+#include "Event.h"
+#include <boost/shared_ptr.hpp>
 
-SessionManager::~SessionManager() {
-}
+namespace Processing {
 
-void SessionManager::addSession(const SessionId& sessionId, const SessionPtr& session) {
-	sessionMap_.insert(std::make_pair(sessionId, session));
-}
+class Listener {
+public:
+	virtual ~Listener() {};
+	virtual void notify(const Event& event) = 0;
+};
 
-SessionPtr SessionManager::getSession(const SessionId& sessionId) const {
-	SessionMap::const_iterator it = sessionMap_.find(sessionId);
-	if(it != sessionMap_.end())
-		return it->second;
-	return SessionPtr();
-}
-
+typedef boost::shared_ptr<Listener> ListenerPtr;
 };
