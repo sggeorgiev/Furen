@@ -16,27 +16,25 @@
  * 
  */
 
-#pragma once
+#include "include/ReceiveMessageEvent.h"
 
-#include "Session.h"
-#include <map>
+namespace Transport {
 
-namespace BaseServer {
-
-class SessionManager {
-public:
-	SessionManager();
-	virtual ~SessionManager();
+const Processing::EventId ReceiveMessageEvent::id = "ReceiveMessageEvent";
 	
-public:
-	void addSession(const SessionId& sessionId, const SessionPtr& session);
-	SessionPtr getSession(const SessionId& sessionId) const;
-	
-private:
-	typedef std::map<SessionId, SessionPtr> SessionMap;
-	SessionMap sessionMap_;
-};
+ReceiveMessageEvent::ReceiveMessageEvent(const MessagePtr& message, const SessionPtr& session): message_(message), session_(session)  {
+}
 
-typedef boost::shared_ptr<SessionManager> SessionManagerPtr;
+const Processing::EventId& ReceiveMessageEvent::getId() const {
+	return ReceiveMessageEvent::id;
+}
+
+const MessagePtr& ReceiveMessageEvent::getMessage() const {
+	return message_;
+}
+
+const SessionPtr& ReceiveMessageEvent::getSession() const {
+	return session_;
+}
 
 };

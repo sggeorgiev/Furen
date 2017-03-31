@@ -20,7 +20,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-namespace BaseServer {
+namespace Transport {
 
 Message::Message() {
 }
