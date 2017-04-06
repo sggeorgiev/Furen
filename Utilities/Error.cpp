@@ -16,27 +16,27 @@
  * 
  */
 
-#pragma once
-#include <boost/shared_ptr.hpp>
+#include "include/Error.h"
 
 namespace Utilities {
 	
-class Error {
-public:
-	Error(unsigned int code, const std::string& message);
-	virtual ~Error();
-	
-public:
-	unsigned int getCode() const;
-	const std::string& getMessage() const;
-	
-private:
-	unsigned int code_;
-	const std::string& message_;
-};
+Error::Error(unsigned int code, const std::string& message): code_(code), message_(message) {
+}
 
-std::ostream& operator<< (std::ostream& stream, const Error& error);
+Error::~Error() {
+}
 
-typedef boost::shared_ptr<Error> ErrorPtr;
+unsigned int Error::getCode() const {
+	return code_;
+}
+
+const std::string& Error::getMessage() const {
+	return message_;
+}
+
+std::ostream& operator<< (std::ostream& stream, const Error& error) {
+	stream << "Error: " << error.getCode() << ", " << error.getMessage();
+	return stream; 
+}
 
 };

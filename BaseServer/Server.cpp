@@ -53,4 +53,12 @@ void Server::handleAccept(const SessionPtr& session, const boost::system::error_
 	accept();
 }
 
+<<<<<<< Updated upstream:BaseServer/Server.cpp
+=======
+void Server::handleReceiveMessage(const SessionPtr session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error) {
+	ReceiveMessageEvent receiveMessageEvent(message, session);
+	Processing::EventBus::instance().dispatchEvent(receiveMessageEvent);
+}
+
+>>>>>>> Stashed changes:Transport/Server.cpp
 }

@@ -53,8 +53,10 @@ void LogProcessor::init(const std::string& directoryName, const std::string& fil
 }
 
 LogProcessor& LogProcessor::operator+=(const Message& message) {
-	std::string textMessage = messageProcessor_.formatMessage(format_, message);
-	writeToPipe(textMessage);
+	if(!file_) {
+		std::string textMessage = messageProcessor_.formatMessage(format_, message);
+		writeToPipe(textMessage);
+	}
 	
 	return *this;
 }
