@@ -18,7 +18,11 @@
 
 #pragma once
 
+namespace Transport {
+
 class IMessageProcessor {
 public:
 	
+};
+
 };

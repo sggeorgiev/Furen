@@ -17,9 +17,11 @@
  */
 
 #include "include/Server.h"
-#include "Log.h"
+#include "include/ReceiveMessageEvent.h"
+#include <Log.h>
+#include <EventBus.h>
 
-namespace BaseServer {
+namespace Transport {
 	
 Server::Server(IOServeice& ioServeice, const Endpoint& endpoint): 
 	ioServeice_(ioServeice),
@@ -38,13 +40,13 @@ void Server::start() {
 
 void Server::accept() {
 	SessionPtr session(new Session(ioServeice_));
-	acceptor_.async_accept(session->getSocket(), boost::bind(&Server::handleAccept, this, session, boost::asio::placeholders::error));
+	acceptor_.async_accept(session->getSocket(), boost::bind(&Server::handleAccept, shared_from_this(), session, boost::asio::placeholders::error));
 }
 
 void Server::handleAccept(const SessionPtr& session, const boost::system::error_code& errorCode) {
 	if (!errorCode) {
 		sessionManager_->addSession(currentSessionId_++, session);
-		session->start();
+		session->start(boost::bind(&Server::handleReceiveMessage, shared_from_this(), session, _1, _2));
 	}
 	else {
 		LOG(Log::ERROR) << "accept fail: " << errorCode;
@@ -53,12 +55,8 @@ void Server::handleAccept(const SessionPtr& session, const boost::system::error_
 	accept();
 }
 
-<<<<<<< Updated upstream:BaseServer/Server.cpp
-=======
-void Server::handleReceiveMessage(const SessionPtr session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error) {
+
+void Server::handleReceiveMessage(const SessionPtr session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error) {	
 	ReceiveMessageEvent receiveMessageEvent(message, session);
 	Processing::EventBus::instance().dispatchEvent(receiveMessageEvent);
-}
-
->>>>>>> Stashed changes:Transport/Server.cpp
 }

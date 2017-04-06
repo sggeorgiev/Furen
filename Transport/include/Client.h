@@ -50,4 +50,5 @@ private:
 };
 
 typedef boost::shared_ptr<Client> ClientPtr;
+
 };

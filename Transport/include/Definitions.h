@@ -17,39 +17,34 @@
  */
 
 #pragma once
-
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
-
-#include "Definitions.h"
+#include <boost/function.hpp>
+#include <deque>
+#include <Error.h>
 #include "Message.h"
-#include "Session.h"
-#include "SessionManager.h"
 
-namespace BaseServer {
+namespace Transport {
 
-class Server: public boost::enable_shared_from_this<Server> {
-public:
-	Server(IOServeice& ioServeice, const Endpoint& endpoint);
-	~Server();
-	
-public:
-	void start();
-	
-private:
-	void accept();
-	void handleAccept(const SessionPtr& session, const boost::system::error_code& error);
-	
-private:
-	IOServeice& ioServeice_;
-	Endpoint endpoint_;
-	Acceptor acceptor_;
-	SessionManagerPtr sessionManager_;
-	SessionId currentSessionId_;
+typedef boost::asio::io_service IOServeice;
+typedef boost::asio::ip::tcp::endpoint Endpoint;
+typedef boost::asio::ip::tcp::resolver::iterator EndpointIterator;
+typedef boost::asio::ip::tcp::acceptor Acceptor;
+
+typedef boost::asio::ip::tcp::socket Socket;
+typedef unsigned long SessionId;
+
+typedef boost::function<void (const Transport::MessagePtr&, const Utilities::ErrorPtr&)> ReadCallback;
+typedef boost::function<void (const Utilities::ErrorPtr&)> WriteCallback;
+
+struct MessageItem {
+	MessagePtr message;
+	WriteCallback callback;
 };
 
-typedef boost::shared_ptr<Server> ServerPtr;
+typedef boost::shared_ptr<MessageItem> MessageItemPtr;
+typedef std::deque<MessageItemPtr> MessageItemQueue;
 
-}
+};

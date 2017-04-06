@@ -28,17 +28,8 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/asio.hpp>
 #include <boost/function.hpp>
-#include <deque>
 
-namespace BaseServer {
-
-typedef boost::function<void (const MessagePtr&, const Utilities::ErrorPtr&)> ReadCallback;
-typedef boost::function<void (const Utilities::ErrorPtr&)> WriteCallback;
-	
-struct MessageItem {
-	MessagePtr message;
-	WriteCallback callback;
-};
+namespace Transport {
 
 class Session: public boost::enable_shared_from_this<Session> {
 public:
@@ -46,25 +37,21 @@ public:
 	virtual ~Session();
 	
 public:
-	void start();
+	void start(const ReadCallback& readCallback);
 	Socket& getSocket();
 	
 public:
-	void read(const ReadCallback& callback);
 	void write(const WriteCallback& callback, const MessagePtr& message);
 	
 private:
-	void handleRead(const MessagePtr& message, const Utilities::ErrorPtr& error);
-	void handleReadMessageHeader(const ReadCallback& callback, const boost::system::error_code& error);
-	void handleReadMessageBody(const ReadCallback& callback, const boost::system::error_code& error);
+	void handleReadMessageHeader(const boost::system::error_code& error);
+	void handleReadMessageBody(const boost::system::error_code& error);
 	void handleWrite(const WriteCallback& callback, const boost::system::error_code& error);
 	
 private:
 	Socket socket_; 
+	ReadCallback readCallback_;
 	MessagePtr message_;
-	
-	typedef boost::shared_ptr<MessageItem> MessageItemPtr;
-	typedef std::deque<MessageItemPtr> MessageItemQueue;
 	MessageItemQueue messageItemQueue_;
 };
 
