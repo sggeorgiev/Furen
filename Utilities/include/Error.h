@@ -35,8 +35,9 @@ private:
 	const std::string& message_;
 };
 
-std::ostream& operator<< (std::ostream& stream, const Error& error);
-
 typedef boost::shared_ptr<Error> ErrorPtr;
+
+std::ostream& operator<< (std::ostream& stream, const Error& error);
+std::ostream& operator<< (std::ostream& stream, const ErrorPtr& error);
 
 };

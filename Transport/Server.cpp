@@ -60,3 +60,5 @@ void Server::handleReceiveMessage(const SessionPtr session, const Transport::Mes
 	ReceiveMessageEvent receiveMessageEvent(message, session);
 	Processing::EventBus::instance().dispatchEvent(receiveMessageEvent);
 }
+
+}
