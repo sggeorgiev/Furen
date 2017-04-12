@@ -18,16 +18,20 @@
 
 #include "include/Session.h"
 #include "Log.h"
+#include <boost/date_time/posix_time/posix_time.hpp>
 
 namespace Transport {
 
-Session::Session(IOServeice& ioServeice): socket_(ioServeice) {
+Session::Session(IOServeice& ioServeice): 
+	socket_(ioServeice), 
+	heartbeatTimer_(ioServeice, boost::posix_time::seconds(HEARTBEAT_INTERVAL)) {
 }
 
 Session::~Session() {
 }
 
 void Session::start(const ReadCallback& readCallback) {
+	heartbeatTimer_.async_wait(boost::bind(&Session::heartbeatHandle, shared_from_this(), _1));
 	readCallback_ = readCallback;
 	message_.reset(new Message);
 	boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Session::handleReadMessageHeader, shared_from_this(), boost::asio::placeholders::error));
@@ -39,6 +43,8 @@ Socket& Session::getSocket() {
 
 void Session::handleReadMessageHeader(const boost::system::error_code& errorCode) {
 	if (!errorCode && message_->decodeHeader()) {
+		resetHeartbeatTimer();
+		
 		LOG(Log::DEBUG) << "readMessageHeader complete successful, body size: " << message_->getBodyLength();
 		boost::asio::async_read(socket_, boost::asio::buffer(message_->getBody(), message_->getBodyLength()), boost::bind(&Session::handleReadMessageBody, shared_from_this(), boost::asio::placeholders::error));
 	}
@@ -94,6 +100,26 @@ void Session::handleWrite(const WriteCallback& callback, const boost::system::er
 		LOG(Log::ERROR) << "write fail: " << errorCode;
 		callback(Utilities::ErrorPtr(new Utilities::Error(Utilities::ErrorCode::CANNOT_READ_FROM_SOCKET, errorCode.message())));
 	}
+}
+
+void Session::heartbeatHandle(const boost::system::error_code& errorCode) {
+	if(errorCode)
+		return;
+	
+	MessagePtr heartbeatMessage(new Message);
+	heartbeatMessage->setData(HEARTBEAT_MESSAGE);
+	write(boost::bind(&Session::heartbeatWriteHandle, shared_from_this(), _1), heartbeatMessage);
+	heartbeatTimer_.expires_from_now(boost::posix_time::seconds(HEARTBEAT_INTERVAL));
+	heartbeatTimer_.async_wait(boost::bind(&Session::heartbeatHandle, shared_from_this(), _1));
+}
+
+void Session::heartbeatWriteHandle(const Utilities::ErrorPtr& error) {
+}
+
+void Session::resetHeartbeatTimer() {
+	heartbeatTimer_.cancel();
+	heartbeatTimer_.expires_from_now(boost::posix_time::seconds(HEARTBEAT_INTERVAL));
+	heartbeatTimer_.async_wait(boost::bind(&Session::heartbeatHandle, shared_from_this(), _1));
 }
 
 }

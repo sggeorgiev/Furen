@@ -39,4 +39,9 @@ std::ostream& operator<< (std::ostream& stream, const Error& error) {
 	return stream; 
 }
 
+std::ostream& operator<< (std::ostream& stream, const ErrorPtr& error) {
+	stream << "Error: " << error->getCode() << ", " << error->getMessage();
+	return stream; 
+}
+
 };

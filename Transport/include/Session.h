@@ -32,6 +32,8 @@
 namespace Transport {
 
 class Session: public boost::enable_shared_from_this<Session> {
+private:
+	const static int HEARTBEAT_INTERVAL = 10;
 public:
 	Session(IOServeice& ioServeice);
 	virtual ~Session();
@@ -47,12 +49,16 @@ private:
 	void handleReadMessageHeader(const boost::system::error_code& error);
 	void handleReadMessageBody(const boost::system::error_code& error);
 	void handleWrite(const WriteCallback& callback, const boost::system::error_code& error);
+	void heartbeatHandle(const boost::system::error_code& errorCode);
+	void heartbeatWriteHandle(const Utilities::ErrorPtr& error);
+	void resetHeartbeatTimer();
 	
 private:
 	Socket socket_; 
 	ReadCallback readCallback_;
 	MessagePtr message_;
 	MessageItemQueue messageItemQueue_;
+	Timer heartbeatTimer_;
 };
 
 typedef boost::shared_ptr<Session> SessionPtr;

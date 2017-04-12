@@ -38,13 +38,14 @@ void Client::start(const ReadCallback& readCallback) {
 	boost::asio::async_connect(socket_, endpointIterator_, boost::bind(&Client::handleConnect, shared_from_this(), boost::asio::placeholders::error));
 }
 
-void Client::handleConnect(const boost::system::error_code& error) {
-	if (!error) {
+void Client::handleConnect(const boost::system::error_code& errorCode) {
+	if (!errorCode) {
 		message_.reset(new Message);
 		boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Client::handleReadMessageHeader, shared_from_this(), boost::asio::placeholders::error));
 	}
 	else {
-		//TODO: connect fail
+		Utilities::ErrorPtr error(new Utilities::Error(Utilities::ErrorCode::CANNOT_CONNECT_TO_SERVER, errorCode.message()));
+		readCallback_(message_, error);
 	}
 }
 

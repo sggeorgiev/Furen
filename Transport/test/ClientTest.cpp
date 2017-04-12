@@ -31,7 +31,7 @@ static void handleRead(const Transport::MessagePtr& message, const Utilities::Er
 
 static void handleWrite(const Utilities::ErrorPtr& error) {
 	if(!error) {
-		std::cout <<"Write complete!" << std::endl;		
+		std::cout <<"Write complete!" << std::endl;
 	}
 	else {
 		std::cout << "Write fail!" << std::endl;

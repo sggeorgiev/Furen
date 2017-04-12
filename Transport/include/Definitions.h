@@ -32,6 +32,7 @@ typedef boost::asio::io_service IOServeice;
 typedef boost::asio::ip::tcp::endpoint Endpoint;
 typedef boost::asio::ip::tcp::resolver::iterator EndpointIterator;
 typedef boost::asio::ip::tcp::acceptor Acceptor;
+typedef boost::asio::deadline_timer Timer;
 
 typedef boost::asio::ip::tcp::socket Socket;
 typedef unsigned long SessionId;
@@ -47,4 +48,5 @@ struct MessageItem {
 typedef boost::shared_ptr<MessageItem> MessageItemPtr;
 typedef std::deque<MessageItemPtr> MessageItemQueue;
 
+const static std::string HEARTBEAT_MESSAGE = "PING";
 };
