@@ -53,7 +53,7 @@ void LogProcessor::init(const std::string& directoryName, const std::string& fil
 }
 
 LogProcessor& LogProcessor::operator+=(const Message& message) {
-	if(!file_) {
+	if(file_) {
 		std::string textMessage = messageProcessor_.formatMessage(format_, message);
 		writeToPipe(textMessage);
 	}

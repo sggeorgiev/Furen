@@ -22,6 +22,8 @@
 
 namespace Transport {
 
+const static std::string HEARTBEAT_MESSAGE = "PING";
+	
 Message::Message() {
 }
 
@@ -70,6 +72,16 @@ void Message::encodeHeader() {
 	char header[Message::HEADER_SIZE + 1] = "";
 	sprintf(header, "%5d", bodyLength_);
 	memcpy(data_, header, Message::HEADER_SIZE);
+}
+
+void Message::createHeartbeatMessage() {
+	setData(HEARTBEAT_MESSAGE);
+}
+
+bool Message::isHeartbeat() {
+	if(strncmp(data_ + Message::HEADER_SIZE, HEARTBEAT_MESSAGE.c_str(), HEARTBEAT_MESSAGE.length()) == 0)
+		return true;
+	return false;
 }
 
 };

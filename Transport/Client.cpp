@@ -64,8 +64,13 @@ void Client::handleReadMessageHeader(const boost::system::error_code& errorCode)
 void Client::handleReadMessageBody(const boost::system::error_code& errorCode) {
 	if (!errorCode) {
 		LOG(Log::DEBUG) << "readMessageBody complete successful";
-		Utilities::ErrorPtr error;
-		readCallback_(message_, error);
+		if(message_->isHeartbeat()) {
+			write(boost::bind(&Client::handleHeartbeatWrite, shared_from_this(), boost::asio::placeholders::error), message_);
+		}
+		else {
+			Utilities::ErrorPtr error;
+			readCallback_(message_, error);
+		}
 		
 		message_.reset(new Message);
 		boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Client::handleReadMessageHeader, shared_from_this(), boost::asio::placeholders::error));
@@ -105,6 +110,15 @@ void Client::handleWrite(const WriteCallback& writeCallback, const boost::system
 	else {
 		LOG(Log::ERROR) << "write fail: " << errorCode;
 		writeCallback(Utilities::ErrorPtr(new Utilities::Error(Utilities::ErrorCode::CANNOT_READ_FROM_SOCKET, errorCode.message())));
+	}
+}
+
+void Client::handleHeartbeatWrite(const Utilities::ErrorPtr& error) {
+	if (!error) {
+		LOG(Log::DEBUG) << "heartbeat write complete successful";
+	}
+	else {
+		LOG(Log::DEBUG) << "heartbeat write fail:" << error;
 	}
 }
 	

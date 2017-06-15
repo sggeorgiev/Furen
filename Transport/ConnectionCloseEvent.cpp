@@ -16,21 +16,25 @@
  * 
  */
 
-#pragma once
+#include "include/ConnectionCloseEvent.h"
 
-namespace Utilities {
-namespace ErrorCode {
-enum {
-	CANNOT_READ_FROM_FILE,
-	CANNOT_WRITE_TO_FILE,
-	CANNOT_OPEN_FILE,
-	CANNOT_GET_FILE_POSITION,
+namespace Transport {
+
+const Processing::EventId ConnectionCloseEvent::id = "ConnectionCloseEvent";
 	
-	CANNOT_READ_FROM_SOCKET,
-	
-	CANNOT_CONNECT_TO_SERVER,
-	
-	CONNECTION_CLOSE,
-};
-};
+ConnectionCloseEvent::ConnectionCloseEvent(const SessionPtr& session, const Utilities::ErrorPtr& error): session_(session), error_(error)  {
+}
+
+const Processing::EventId& ConnectionCloseEvent::getId() const {
+	return ConnectionCloseEvent::id;
+}
+
+const SessionPtr& ConnectionCloseEvent::getSession() const {
+	return session_;
+}
+
+const Utilities::ErrorPtr& ConnectionCloseEvent::getError() const {
+	return error_;
+}
+
 };

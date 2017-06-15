@@ -39,6 +39,8 @@ public:
 	unsigned int getBodyLength() const ;
 	
 	bool decodeHeader();
+	void createHeartbeatMessage();
+	bool isHeartbeat();
 	
 private:
 	void encodeHeader();

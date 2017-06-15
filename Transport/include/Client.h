@@ -38,6 +38,7 @@ private:
 	void handleReadMessageHeader(const boost::system::error_code& error);
 	void handleReadMessageBody(const boost::system::error_code& error);
 	void handleWrite(const WriteCallback& callback, const boost::system::error_code& errorCode);
+	void handleHeartbeatWrite(const Utilities::ErrorPtr& error);
 private:
 	IOServeice& ioServeice_;
 	EndpointIterator endpointIterator_;

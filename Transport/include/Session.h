@@ -39,7 +39,7 @@ public:
 	virtual ~Session();
 	
 public:
-	void start(const ReadCallback& readCallback);
+	void start(const ReadCallback& readCallback, const CloseCallback& closeCallback);
 	Socket& getSocket();
 	
 public:
@@ -52,10 +52,12 @@ private:
 	void heartbeatHandle(const boost::system::error_code& errorCode);
 	void heartbeatWriteHandle(const Utilities::ErrorPtr& error);
 	void resetHeartbeatTimer();
+	void handleError(const boost::system::error_code& errorCode);
 	
 private:
 	Socket socket_; 
 	ReadCallback readCallback_;
+	CloseCallback closeCallback_;
 	MessagePtr message_;
 	MessageItemQueue messageItemQueue_;
 	Timer heartbeatTimer_;

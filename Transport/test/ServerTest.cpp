@@ -36,6 +36,10 @@ public:
 		}
 	}
 	
+	void handleConnectionClose(const Transport::SessionPtr& session, const Utilities::ErrorPtr& error) {
+		std::cout << "connection close: " << error;
+	}
+	
 	void handleWrite(const Utilities::ErrorPtr& error) {
 		if(error)
 			std::cout << "Write fail!" << std::endl;

@@ -17,20 +17,26 @@
  */
 
 #pragma once
+#include "Event.h"
+#include "Message.h"
+#include "Session.h"
 
-namespace Utilities {
-namespace ErrorCode {
-enum {
-	CANNOT_READ_FROM_FILE,
-	CANNOT_WRITE_TO_FILE,
-	CANNOT_OPEN_FILE,
-	CANNOT_GET_FILE_POSITION,
+namespace Transport {
 	
-	CANNOT_READ_FROM_SOCKET,
+class ConnectionCloseEvent: public Processing::Event {
+public:
+	static const Processing::EventId id;
+public:
+	ConnectionCloseEvent(const SessionPtr& session, const Utilities::ErrorPtr& error);
 	
-	CANNOT_CONNECT_TO_SERVER,
+public:
+	virtual const Processing::EventId& getId() const;
+	const SessionPtr& getSession() const;
+	const Utilities::ErrorPtr& getError() const;
 	
-	CONNECTION_CLOSE,
+private:
+	SessionPtr session_;
+	Utilities::ErrorPtr error_;
 };
-};
+
 };

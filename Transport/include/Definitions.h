@@ -38,6 +38,7 @@ typedef boost::asio::ip::tcp::socket Socket;
 typedef unsigned long SessionId;
 
 typedef boost::function<void (const Transport::MessagePtr&, const Utilities::ErrorPtr&)> ReadCallback;
+typedef boost::function<void (const Utilities::ErrorPtr&)> CloseCallback;
 typedef boost::function<void (const Utilities::ErrorPtr&)> WriteCallback;
 
 struct MessageItem {
@@ -48,5 +49,4 @@ struct MessageItem {
 typedef boost::shared_ptr<MessageItem> MessageItemPtr;
 typedef std::deque<MessageItemPtr> MessageItemQueue;
 
-const static std::string HEARTBEAT_MESSAGE = "PING";
 };

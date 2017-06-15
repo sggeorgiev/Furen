@@ -39,7 +39,7 @@ static void handleWrite(const Utilities::ErrorPtr& error) {
 }
 
 int main() {
-	Log::init("./", "server_log", "trace", "%Time% %Severity% %ProcessId% %ThreadId% %Text%", 104857600);
+	Log::init("./", "client_log", "trace", "%Time% %Severity% %ProcessId% %ThreadId% %Text%", 104857600);
 	
 	Transport::IOServeice ioServeice;
 	boost::asio::ip::tcp::resolver resolver(ioServeice);
