@@ -32,7 +32,7 @@ public:
 	
 private:
 	unsigned int code_;
-	const std::string& message_;
+	const std::string message_;
 };
 
 typedef boost::shared_ptr<Error> ErrorPtr;
