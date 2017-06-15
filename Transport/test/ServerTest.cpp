@@ -27,7 +27,7 @@ public:
 	TestServer(Transport::IOServeice& ioServeice, const Transport::Endpoint& endpoint): Transport::Server(ioServeice, endpoint) {
 	}
 	
-	void handleReceiveMessage(const Transport::SessionPtr session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error) {
+	void handleReceiveMessage(const Transport::SessionPtr& session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error) {
 		if(!error) {
 			std::string data(message->getBody(), message->getBodyLength());
 			std::cout << "Received:" << data << std::endl;
