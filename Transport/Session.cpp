@@ -30,9 +30,10 @@ Session::Session(IOServeice& ioServeice):
 Session::~Session() {
 }
 
-void Session::start(const ReadCallback& readCallback) {
+void Session::start(const ReadCallback& readCallback, const CloseCallback& closeCallback) {
 	heartbeatTimer_.async_wait(boost::bind(&Session::heartbeatHandle, shared_from_this(), _1));
 	readCallback_ = readCallback;
+	closeCallback_ = closeCallback;
 	message_.reset(new Message);
 	boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Session::handleReadMessageHeader, shared_from_this(), boost::asio::placeholders::error));
 }
@@ -49,30 +50,33 @@ void Session::handleReadMessageHeader(const boost::system::error_code& errorCode
 		boost::asio::async_read(socket_, boost::asio::buffer(message_->getBody(), message_->getBodyLength()), boost::bind(&Session::handleReadMessageBody, shared_from_this(), boost::asio::placeholders::error));
 	}
 	else {
-		LOG(Log::ERROR) << "readMessageHeader fail: " << errorCode;
-		Utilities::ErrorPtr error(new Utilities::Error(Utilities::ErrorCode::CANNOT_READ_FROM_SOCKET, errorCode.message()));
-		readCallback_(message_, error);
+		handleError(errorCode);
 	}
 }
 
 void Session::handleReadMessageBody(const boost::system::error_code& errorCode) {
 	if (!errorCode) {
 		LOG(Log::DEBUG) << "readMessageBody complete successful";
-		Utilities::ErrorPtr error;
-		readCallback_(message_, error);
+		if(message_->isHeartbeat()) {
+			LOG(Log::DEBUG) << "recived heartbeat message";
+		}
+		else {
+			Utilities::ErrorPtr error;
+			readCallback_(message_, error);
+		}
 		
 		message_.reset(new Message);
 		boost::asio::async_read(socket_, boost::asio::buffer(message_->getData(), Message::HEADER_SIZE), boost::bind(&Session::handleReadMessageHeader, shared_from_this(), boost::asio::placeholders::error));
 	}
 	else {
-		LOG(Log::ERROR) << "readMessageBody fail: " << errorCode;
-		Utilities::ErrorPtr error(new Utilities::Error(Utilities::ErrorCode::CANNOT_READ_FROM_SOCKET, errorCode.message()));
-		readCallback_(message_, error);
+		handleError(errorCode);
 	}
 }
 
 void Session::write(const WriteCallback& callback, const MessagePtr& message)
 {
+	LOG(Log::DEBUG) << "write message";
+	
 	bool writeInProgress = !messageItemQueue_.empty();
 	MessageItemPtr newMessageItem(new MessageItem);
 	newMessageItem->message = message;
@@ -97,8 +101,7 @@ void Session::handleWrite(const WriteCallback& callback, const boost::system::er
 		}
 	}
 	else {
-		LOG(Log::ERROR) << "write fail: " << errorCode;
-		callback(Utilities::ErrorPtr(new Utilities::Error(Utilities::ErrorCode::CANNOT_READ_FROM_SOCKET, errorCode.message())));
+		handleError(errorCode);
 	}
 }
 
@@ -106,20 +109,43 @@ void Session::heartbeatHandle(const boost::system::error_code& errorCode) {
 	if(errorCode)
 		return;
 	
+	LOG(Log::DEBUG) << "send heartbeat message";
+	
 	MessagePtr heartbeatMessage(new Message);
-	heartbeatMessage->setData(HEARTBEAT_MESSAGE);
+	heartbeatMessage->createHeartbeatMessage();
 	write(boost::bind(&Session::heartbeatWriteHandle, shared_from_this(), _1), heartbeatMessage);
 	heartbeatTimer_.expires_from_now(boost::posix_time::seconds(HEARTBEAT_INTERVAL));
 	heartbeatTimer_.async_wait(boost::bind(&Session::heartbeatHandle, shared_from_this(), _1));
 }
 
 void Session::heartbeatWriteHandle(const Utilities::ErrorPtr& error) {
+	if (!error) {
+		LOG(Log::DEBUG) << "heartbeat write complete successful";
+	}
+	else {
+		LOG(Log::DEBUG) << "heartbeat write fail:" << error;
+	}
 }
 
 void Session::resetHeartbeatTimer() {
+	LOG(Log::DEBUG) << "reset heartbeat timer";
+	
 	heartbeatTimer_.cancel();
 	heartbeatTimer_.expires_from_now(boost::posix_time::seconds(HEARTBEAT_INTERVAL));
 	heartbeatTimer_.async_wait(boost::bind(&Session::heartbeatHandle, shared_from_this(), _1));
+}
+
+void Session::handleError(const boost::system::error_code& errorCode) {
+	if((boost::asio::error::eof == errorCode) || (boost::asio::error::connection_reset == errorCode)) {
+		LOG(Log::ERROR) << "connection close: " << errorCode;
+	}
+	else {
+		LOG(Log::ERROR) << "Error: " << errorCode;
+	}
+	
+	Utilities::ErrorPtr error(new Utilities::Error(Utilities::ErrorCode::CONNECTION_CLOSE, errorCode.message()));
+	closeCallback_(error);
+	heartbeatTimer_.cancel();
 }
 
 }

@@ -18,6 +18,7 @@
 
 #include "include/Server.h"
 #include "include/ReceiveMessageEvent.h"
+#include "include/ConnectionCloseEvent.h"
 #include <Log.h>
 #include <EventBus.h>
 
@@ -46,7 +47,7 @@ void Server::accept() {
 void Server::handleAccept(const SessionPtr& session, const boost::system::error_code& errorCode) {
 	if (!errorCode) {
 		sessionManager_->addSession(currentSessionId_++, session);
-		session->start(boost::bind(&Server::handleReceiveMessage, shared_from_this(), session, _1, _2));
+		session->start(boost::bind(&Server::handleReceiveMessage, shared_from_this(), session, _1, _2), boost::bind(&Server::handleConnectionClose, shared_from_this(), session, _1));
 	}
 	else {
 		LOG(Log::ERROR) << "accept fail: " << errorCode;
@@ -56,9 +57,14 @@ void Server::handleAccept(const SessionPtr& session, const boost::system::error_
 }
 
 
-void Server::handleReceiveMessage(const SessionPtr session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error) {	
+void Server::handleReceiveMessage(const SessionPtr& session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error) {
 	ReceiveMessageEvent receiveMessageEvent(message, session);
 	Processing::EventBus::instance().dispatchEvent(receiveMessageEvent);
+}
+
+void Server::handleConnectionClose(const SessionPtr& session, const Utilities::ErrorPtr& error) {
+	ConnectionCloseEvent connectionCloseEvent(session, error);
+	Processing::EventBus::instance().dispatchEvent(connectionCloseEvent);
 }
 
 }

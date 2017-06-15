@@ -39,7 +39,8 @@ public:
 	void start();
 	
 protected:
-	virtual void handleReceiveMessage(const SessionPtr session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error);
+	virtual void handleReceiveMessage(const SessionPtr& session, const Transport::MessagePtr& message, const Utilities::ErrorPtr& error);
+	virtual void handleConnectionClose(const SessionPtr& session, const Utilities::ErrorPtr& error);
 	
 private:
 	void accept();
